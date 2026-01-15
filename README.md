@@ -60,18 +60,16 @@ pnpm add @react-three/uikit
 
 #### Installing from GitHub
 
-If you want to use the latest development version directly from GitHub, you can install it with:
+If you want to use the latest development version directly from GitHub, you can install the entire repository with:
 
 ```bash
-# Using pnpm (recommended for this monorepo)
+# Using pnpm (required for this monorepo)
 pnpm add github:acmoles/uikit
-
-# Or install specific packages from the monorepo
-pnpm add "github:acmoles/uikit#HEAD:packages/react"
-pnpm add "github:acmoles/uikit#HEAD:packages/uikit"
 ```
 
-**Note:** When installing from GitHub, pnpm must be available as the repository uses pnpm workspaces. The packages will be automatically built during installation via the `prepare` scripts.
+This will install the entire monorepo, and the `prepare` scripts will automatically generate necessary files and build all packages.
+
+**Note:** When installing from GitHub, pnpm must be available as the repository uses pnpm workspaces. The packages will be automatically built during installation.
 
 ### Getting Started
 
