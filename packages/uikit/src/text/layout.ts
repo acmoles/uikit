@@ -19,6 +19,7 @@ export type GlyphLayout = {
   lines: Array<GlyphLayoutLine>
   availableWidth: number
   availableHeight: number
+  hasEllipsis?: boolean
 } & GlyphOutProperties
 
 export type GlyphProperties = Partial<{
@@ -28,6 +29,8 @@ export type GlyphProperties = Partial<{
   wordBreak: WordBreak
   whiteSpace: WhiteSpace
   tabSize: number
+  lineClamp: number
+  textOverflow: 'clip' | 'ellipsis'
 }>
 
 export type WhiteSpace = 'normal' | 'collapse' | 'pre' | 'pre-line'
@@ -93,17 +96,19 @@ export function computedCustomLayouting(
         text = text.replaceAll(collapseRegex, ' ').trim()
         break
     }
-    const layoutProperties = buildGlyphOutProperties(font, text, properties.value)
+    const layoutProperties = buildGlyphOutProperties(font, text, properties.value as Required<GlyphProperties>)
     propertiesRef.current = layoutProperties
 
-    const { width: minWidth } = measureGlyphLayout(layoutProperties, 0)
-    const { height: minHeight } = measureGlyphLayout(layoutProperties, undefined)
+    const lineClamp = properties.value.lineClamp
+
+    const { width: minWidth } = measureGlyphLayout(layoutProperties, 0, lineClamp)
+    const { height: minHeight } = measureGlyphLayout(layoutProperties, undefined, lineClamp)
 
     return {
       minHeight,
       minWidth,
       measure: (width, widthMode) =>
-        measureGlyphLayout(layoutProperties, widthMode === MeasureMode.Undefined ? undefined : width),
+        measureGlyphLayout(layoutProperties, widthMode === MeasureMode.Undefined ? undefined : width, lineClamp),
     }
   })
 }
@@ -129,6 +134,7 @@ const lineHelper = {} as GlyphLayoutLine
 export function measureGlyphLayout(
   properties: GlyphOutProperties,
   availableWidth?: number,
+  lineClamp?: number,
 ): {
   width: number
   height: number
@@ -141,14 +147,19 @@ export function measureGlyphLayout(
   let charIndex = 0
 
   while (charIndex < text.length) {
+    if (lineClamp != null && lines >= lineClamp) {
+      break
+    }
     wrapper(properties, availableWidth, charIndex, lineHelper)
     width = Math.max(width, lineHelper.nonWhitespaceWidth)
     lines += 1
     charIndex = lineHelper.charLength + lineHelper.charIndexOffset
   }
 
-  if (text[text.length - 1] === '\n') {
-    lines += 1
+  if (lineClamp == null || lines < lineClamp) {
+    if (text[text.length - 1] === '\n') {
+      lines += 1
+    }
   }
 
   return { width, height: getGlyphLayoutHeight(lines, properties.lineHeight) }
@@ -158,21 +169,67 @@ export function buildGlyphLayout(
   properties: GlyphOutProperties,
   availableWidth: number,
   availableHeight: number,
+  lineClamp?: number,
+  textOverflow?: 'clip' | 'ellipsis',
 ): GlyphLayout {
   const lines: Array<GlyphLayoutLine> = []
   const wrapper = wrappers[properties.wordBreak]
   const text = properties.text
 
   let charIndex = 0
+  let hasEllipsis = false
 
   while (charIndex < text.length) {
+    if (lineClamp != null && lines.length >= lineClamp) {
+      break
+    }
     const line = {} as GlyphLayoutLine
     wrapper(properties, availableWidth, charIndex, line)
     lines.push(line)
     charIndex = line.charLength + line.charIndexOffset
   }
 
-  if (lines.length === 0 || text[text.length - 1] === '\n') {
+  // Handle ellipsis if text was clamped
+  if (
+    textOverflow === 'ellipsis' &&
+    lineClamp != null &&
+    lines.length === lineClamp &&
+    charIndex < text.length
+  ) {
+    hasEllipsis = true
+    // Text was clamped, add ellipsis to the last line
+    const lastLine = lines[lines.length - 1]!
+    const ellipsisWidth = properties.font.getGlyphInfo('…').xadvance * properties.fontSize
+    
+    // We need to make room for the ellipsis by removing characters from the end
+    // Rebuild the last line with room for ellipsis
+    const lastLineStartIndex = lastLine.charIndexOffset
+    let tempCharIndex = lastLineStartIndex
+    let lineWidth = 0
+    const targetWidth = availableWidth - ellipsisWidth
+    
+    // Find how many characters fit with ellipsis
+    while (tempCharIndex < lastLineStartIndex + lastLine.charLength) {
+      const char = text[tempCharIndex]!
+      const glyphInfo = properties.font.getGlyphInfo(char)
+      const charWidth = glyphInfo.xadvance * properties.fontSize + toAbsoluteNumber(properties.letterSpacing)
+      
+      if (lineWidth + charWidth > targetWidth) {
+        break
+      }
+      
+      lineWidth += charWidth
+      tempCharIndex++
+    }
+    
+    // Update the last line to include space for ellipsis
+    const newCharLength = Math.max(0, tempCharIndex - lastLineStartIndex)
+    lastLine.charLength = newCharLength
+    lastLine.nonWhitespaceCharLength = newCharLength
+    lastLine.nonWhitespaceWidth = lineWidth
+  }
+
+  if (lines.length === 0 || (text[text.length - 1] === '\n' && (lineClamp == null || lines.length < lineClamp))) {
     lines.push({
       charLength: 0,
       nonWhitespaceWidth: 0,
@@ -186,6 +243,7 @@ export function buildGlyphLayout(
     lines,
     availableHeight,
     availableWidth,
+    hasEllipsis,
     ...properties,
   }
 }
