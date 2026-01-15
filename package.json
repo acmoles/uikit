@@ -1,4 +1,7 @@
 {
+  "name": "@react-three/uikit-monorepo",
+  "version": "0.0.0",
+  "private": true,
   "type": "module",
   "devDependencies": {
     "@mdx-js/mdx": "^3.1.0",

@@ -1,0 +1,10 @@
+import { Dialog as VanillaDialog } from '@pmndrs/uikit-default';
+import { build } from '@react-three/uikit';
+export { Dialog as VanillaDialog } from '@pmndrs/uikit-default';
+export const Dialog = /*@__PURE__*/ build(VanillaDialog, "VanillaDefaultDialog");
+export * from "./content.js";
+export * from "./description.js";
+export * from "./footer.js";
+export * from "./header.js";
+export * from "./title.js";
+export * from "./trigger.js";

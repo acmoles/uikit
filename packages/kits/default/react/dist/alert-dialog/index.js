@@ -1,0 +1,12 @@
+import { AlertDialog as VanillaAlertDialog } from '@pmndrs/uikit-default';
+import { build } from '@react-three/uikit';
+export { AlertDialog as VanillaAlertDialog } from '@pmndrs/uikit-default';
+export const AlertDialog = /*@__PURE__*/ build(VanillaAlertDialog, "VanillaDefaultAlertDialog");
+export * from "./action.js";
+export * from "./cancel.js";
+export * from "./content.js";
+export * from "./description.js";
+export * from "./footer.js";
+export * from "./header.js";
+export * from "./title.js";
+export * from "./trigger.js";
