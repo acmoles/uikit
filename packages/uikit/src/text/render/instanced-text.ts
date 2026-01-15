@@ -388,7 +388,7 @@ export class InstancedText {
               glyphOrNumber = glyphs[glyphIndex]
             }
             
-            let glyph = glyphOrNumber as InstancedGlyph
+            let glyph = glyphOrNumber as InstancedGlyph | undefined
             if (glyph == null) {
               glyphs[glyphIndex] = glyph = new InstancedGlyph(
                 this.group,

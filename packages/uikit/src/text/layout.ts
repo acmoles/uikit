@@ -200,32 +200,37 @@ export function buildGlyphLayout(
     // Text was clamped, add ellipsis to the last line
     const lastLine = lines[lines.length - 1]!
     const ellipsisWidth = properties.font.getGlyphInfo('…').xadvance * properties.fontSize
+    const letterSpacingValue = toAbsoluteNumber(properties.letterSpacing)
     
     // We need to make room for the ellipsis by removing characters from the end
     // Rebuild the last line with room for ellipsis
     const lastLineStartIndex = lastLine.charIndexOffset
     let tempCharIndex = lastLineStartIndex
     let lineWidth = 0
+    let nonWhitespaceCount = 0
     const targetWidth = availableWidth - ellipsisWidth
     
     // Find how many characters fit with ellipsis
     while (tempCharIndex < lastLineStartIndex + lastLine.charLength) {
       const char = text[tempCharIndex]!
       const glyphInfo = properties.font.getGlyphInfo(char)
-      const charWidth = glyphInfo.xadvance * properties.fontSize + toAbsoluteNumber(properties.letterSpacing)
+      const charWidth = glyphInfo.xadvance * properties.fontSize + letterSpacingValue
       
       if (lineWidth + charWidth > targetWidth) {
         break
       }
       
       lineWidth += charWidth
+      if (char !== ' ') {
+        nonWhitespaceCount++
+      }
       tempCharIndex++
     }
     
     // Update the last line to include space for ellipsis
     const newCharLength = Math.max(0, tempCharIndex - lastLineStartIndex)
     lastLine.charLength = newCharLength
-    lastLine.nonWhitespaceCharLength = newCharLength
+    lastLine.nonWhitespaceCharLength = nonWhitespaceCount
     lastLine.nonWhitespaceWidth = lineWidth
   }
 
