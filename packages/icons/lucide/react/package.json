@@ -15,7 +15,8 @@
   "author": "Bela Bohlender",
   "scripts": {
     "generate": "node --loader ts-node/esm ./generate.ts",
-    "build": "tsc -p ./tsconfig.build.json"
+    "build": "tsc -p ./tsconfig.build.json",
+    "prepare": "pnpm run generate"
   },
   "type": "module",
   "main": "src/index.ts",
