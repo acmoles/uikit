@@ -48,7 +48,6 @@
   },
   "scripts": {
     "build:all": "pnpm -r build",
-    "test:docs": "node scripts/check-docs-mdx.mjs",
-    "prepare": "pnpm run build:all"
+    "test:docs": "node scripts/check-docs-mdx.mjs"
   }
 }

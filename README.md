@@ -50,26 +50,17 @@ createRoot(document.getElementById('root')).render(
 
 ### Installation
 
-You can install uikit from npm:
+Install from npm:
 
 ```bash
 npm install @react-three/uikit
-# or
-pnpm add @react-three/uikit
 ```
 
-#### Installing from GitHub
-
-If you want to use the latest development version directly from GitHub, you can install the entire repository with:
+Or install directly from GitHub:
 
 ```bash
-# Using pnpm (required for this monorepo)
-pnpm add github:acmoles/uikit
+npm install github:acmoles/uikit
 ```
-
-This will install the entire monorepo, and the `prepare` scripts will automatically generate necessary files and build all packages.
-
-**Note:** When installing from GitHub, pnpm must be available as the repository uses pnpm workspaces. The packages will be automatically built during installation.
 
 ### Getting Started
 

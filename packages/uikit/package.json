@@ -30,7 +30,6 @@
     "test:dts": "mocha ./tests/dts.spec.ts",
     "build": "tsc -p ./tsconfig.build.json",
     "generate": "node --loader ts-node/esm scripts/flex-generate-setter.ts",
-    "prepare": "pnpm run generate",
     "check:prettier": "prettier --check src scripts tests",
     "check:eslint": "eslint 'src/**/*.{tsx,ts}'",
     "fix:prettier": "prettier --write src scripts tests",

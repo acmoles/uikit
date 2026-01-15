@@ -2,17 +2,12 @@
 
 This project uses [semantic commits](https://conventionalcommits.org) and [semver](https://semver.org).
 
-To get started, make sure you have [Node](https://nodejs.org) version 22 and [PNPM](https://pnpm.io/) version 10 installed. Install dependencies and build the libraries with:
+To get started, make sure you have [Node](https://nodejs.org) version 22 and [PNPM](https://pnpm.io/) verson 10 installed. Install dependencies, generate files, and build the libraries with:
 
 ```bash
 pnpm i
-```
-
-The `pnpm i` command will automatically run the necessary `prepare` scripts to generate files and build the libraries.
-
-If you need to manually rebuild after making changes:
-
-```bash
+pnpm -r convert
+pnpm -r generate
 pnpm -r build
 ```
 
