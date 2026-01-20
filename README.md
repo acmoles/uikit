@@ -48,6 +48,22 @@ createRoot(document.getElementById('root')).render(
 
 ## How to get started
 
+### Installation
+
+Install from npm:
+
+```bash
+npm install @react-three/uikit
+```
+
+Or install directly from GitHub:
+
+```bash
+npm install github:acmoles/uikit
+```
+
+### Getting Started
+
 If you are using `@react-three/fiber`, get started with **[building your first layout](https://docs.pmnd.rs/uikit/getting-started/first-layout)**, take a look at our **[examples](https://docs.pmnd.rs/uikit/getting-started/examples)** to see uikit in action. If you want to use vanilla three.js, visit [this tutorial](https://pmndrs.github.io/uikit/docs/getting-started/vanilla). Alternatively, learn more about:
 
 - [All components and their properties](https://docs.pmnd.rs/uikit/getting-started/components-and-properties)

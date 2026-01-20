@@ -1,0 +1,35 @@
+import { abortableEffect, Container } from '@pmndrs/uikit';
+import { signal } from '@preact/signals-core';
+import { borderRadius, colors, componentDefaults } from '../theme.js';
+export class Skeleton extends Container {
+    opacity;
+    time = 0;
+    constructor(inputProperties, initialClasses, config) {
+        const opacity = signal(1);
+        super(inputProperties, initialClasses, {
+            defaults: componentDefaults,
+            ...config,
+            defaultOverrides: {
+                '*': {
+                    borderColor: colors.border,
+                },
+                borderRadius: borderRadius.md,
+                backgroundColor: colors.muted,
+                opacity,
+                ...config?.defaultOverrides,
+            },
+        });
+        this.opacity = opacity;
+        abortableEffect(() => {
+            const fn = this.animate.bind(this);
+            const root = this.root.value;
+            root.onFrameSet.add(fn);
+            return () => root.onFrameSet.delete(fn);
+        }, this.abortSignal);
+    }
+    animate(delta) {
+        this.opacity.value = Math.cos((this.time / 1000) * Math.PI) * 0.25 + 0.75;
+        this.time += delta;
+        this.root.peek().requestFrame?.();
+    }
+}

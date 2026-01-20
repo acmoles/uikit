@@ -24,7 +24,7 @@
     "build": "tsc -p ./tsconfig.build.json"
   },
   "type": "module",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
   "publishConfig": {
     "main": "dist/index.js"
   },

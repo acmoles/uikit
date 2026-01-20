@@ -23,7 +23,7 @@
   "files": [
     "dist"
   ],
-  "main": "src/index.tsx",
+  "main": "dist/index.js",
   "publishConfig": {
     "main": "dist/index.js"
   },

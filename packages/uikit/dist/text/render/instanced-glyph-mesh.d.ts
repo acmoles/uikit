@@ -1,0 +1,25 @@
+import { Box3, InstancedBufferAttribute, Material, Mesh, Sphere } from 'three';
+import { RootContext } from '../../context.js';
+export declare class InstancedGlyphMesh extends Mesh {
+    private readonly root;
+    readonly instanceMatrix: InstancedBufferAttribute;
+    readonly instanceRGBA: InstancedBufferAttribute;
+    readonly instanceUV: InstancedBufferAttribute;
+    readonly instanceClipping: InstancedBufferAttribute;
+    readonly instanceRenderSolid: InstancedBufferAttribute;
+    count: number;
+    protected readonly isInstancedMesh = true;
+    readonly instanceColor: null;
+    readonly morphTexture: null;
+    readonly boundingBox: Box3;
+    readonly boundingSphere: Sphere;
+    private readonly customUpdateMatrixWorld;
+    constructor(root: Omit<RootContext, 'glyphGroupManager' | 'panelGroupManager'>, instanceMatrix: InstancedBufferAttribute, instanceRGBA: InstancedBufferAttribute, instanceUV: InstancedBufferAttribute, instanceClipping: InstancedBufferAttribute, instanceRenderSolid: InstancedBufferAttribute, material: Material);
+    copy(): this;
+    dispose(): void;
+    computeBoundingBox(): void;
+    computeBoundingSphere(): void;
+    updateMorphTargets(): void;
+    raycast(): void;
+    spherecast(): void;
+}
