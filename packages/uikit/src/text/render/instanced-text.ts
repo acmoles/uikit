@@ -24,6 +24,7 @@ export type TextAlignProperties = {
 
 export const additionalTextDefaults = {
   verticalAlign: 'middle' as keyof typeof alignmentYMap,
+  textOverflow: 'clip' as 'clip' | 'ellipsis',
 }
 
 export type AdditionalTextDefaults = typeof additionalTextDefaults
@@ -49,6 +50,7 @@ export function createInstancedText(
           size: { value: size },
           paddingInset: { value: paddingInset },
           borderInset: { value: borderInset },
+          properties: { value: { lineClamp, textOverflow } },
         } = text
         if (layoutProperties == null || size == null || paddingInset == null || borderInset == null) {
           return
@@ -58,7 +60,7 @@ export function createInstancedText(
         const [bTop, bRight, bBottom, bLeft] = borderInset
         const actualWidth = width - pRight - pLeft - bRight - bLeft
         const actualheight = height - pTop - pBottom - bTop - bBottom
-        layoutSignal.value = buildGlyphLayout(layoutProperties, actualWidth, actualheight)
+        layoutSignal.value = buildGlyphLayout(layoutProperties, actualWidth, actualheight, lineClamp, textOverflow)
       }),
     text.abortSignal,
   )
@@ -298,7 +300,7 @@ export class InstancedText {
         if (layout == null) {
           return
         }
-        const { text, font, lines, letterSpacing = 0, fontSize = 16, lineHeight = 1.2, availableWidth } = layout
+        const { text, font, lines, letterSpacing = 0, fontSize = 16, lineHeight = 1.2, availableWidth, hasEllipsis } = layout
 
         let y = getYOffset(layout, this.properties.value.verticalAlign) - layout.availableHeight / 2
 
@@ -375,11 +377,42 @@ export class InstancedText {
             x += getOffsetToNextGlyph(fontSize, glyphInfo, letterSpacing)
           }
 
+          // Add ellipsis if this is the last line and text was clamped
+          if (hasEllipsis && lineIndex === linesLength - 1) {
+            const glyphIndex = charLength
+            const ellipsisInfo = font.getGlyphInfo('…')
+            
+            let glyphOrNumber = glyphs[glyphIndex]
+            while (glyphIndex < glyphs.length && typeof glyphOrNumber == 'number') {
+              glyphs.splice(glyphIndex, 1)
+              glyphOrNumber = glyphs[glyphIndex]
+            }
+            
+            let glyph = glyphOrNumber as InstancedGlyph | undefined
+            if (glyph == null) {
+              glyphs[glyphIndex] = glyph = new InstancedGlyph(
+                this.group,
+                this.matrix.peek(),
+                this.properties.peek().color ?? 0,
+                toAbsoluteNumber(this.properties.peek().opacity, () => 1),
+                this.parentClippingRect?.peek(),
+              )
+            }
+            glyph.updateGlyphAndTransformation(
+              ellipsisInfo,
+              x + getGlyphOffsetX(font, fontSize, ellipsisInfo, prevGlyphId),
+              -(y + getGlyphOffsetY(fontSize, lineHeight, ellipsisInfo)),
+              fontSize,
+              pixelSize,
+            )
+            glyph.show()
+          }
+
           y += getOffsetToNextLine(lineHeight)
 
           //remove unnecassary glyphs
           const glyphsLength = glyphs.length
-          const newGlyphsLength = charLength
+          const newGlyphsLength = hasEllipsis && lineIndex === linesLength - 1 ? charLength + 1 : charLength
           for (let ii = newGlyphsLength; ii < glyphsLength; ii++) {
             const glyph = glyphs[ii]!
             if (typeof glyph === 'number') {
