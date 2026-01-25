@@ -43,7 +43,8 @@ export function createInstancedText(
 
   const layoutSignal = signal<GlyphLayout | undefined>(undefined)
   abortableEffect(() => {
-    // Read customLayouting to ensure we react to font and text property changes
+    // Read customLayouting to create reactive dependency on font and text property changes
+    // (This updates layoutPropertiesRef.current as a side effect)
     customLayouting.value
     const layoutProperties = layoutPropertiesRef.current
     const size = text.size.value
