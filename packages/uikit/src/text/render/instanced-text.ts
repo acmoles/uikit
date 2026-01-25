@@ -42,26 +42,34 @@ export function createInstancedText(
   const customLayouting = computedCustomLayouting(text.properties, text.fontSignal, layoutPropertiesRef)
 
   const layoutSignal = signal<GlyphLayout | undefined>(undefined)
+  
+  // Extract layout building logic to be called both on listener trigger and initially
+  const updateLayout = () => {
+    const layoutProperties = layoutPropertiesRef.current
+    const {
+      size: { value: size },
+      paddingInset: { value: paddingInset },
+      borderInset: { value: borderInset },
+      properties: { value: { lineClamp, textOverflow } },
+    } = text
+    if (layoutProperties == null || size == null || paddingInset == null || borderInset == null) {
+      return
+    }
+    const [width, height] = size
+    const [pTop, pRight, pBottom, pLeft] = paddingInset
+    const [bTop, bRight, bBottom, bLeft] = borderInset
+    const actualWidth = width - pRight - pLeft - bRight - bLeft
+    const actualheight = height - pTop - pBottom - bTop - bBottom
+    layoutSignal.value = buildGlyphLayout(layoutProperties, actualWidth, actualheight, lineClamp, textOverflow)
+  }
+  
   abortableEffect(
-    () =>
-      text.node.addLayoutChangeListener(() => {
-        const layoutProperties = layoutPropertiesRef.current
-        const {
-          size: { value: size },
-          paddingInset: { value: paddingInset },
-          borderInset: { value: borderInset },
-          properties: { value: { lineClamp, textOverflow } },
-        } = text
-        if (layoutProperties == null || size == null || paddingInset == null || borderInset == null) {
-          return
-        }
-        const [width, height] = size
-        const [pTop, pRight, pBottom, pLeft] = paddingInset
-        const [bTop, bRight, bBottom, bLeft] = borderInset
-        const actualWidth = width - pRight - pLeft - bRight - bLeft
-        const actualheight = height - pTop - pBottom - bTop - bBottom
-        layoutSignal.value = buildGlyphLayout(layoutProperties, actualWidth, actualheight, lineClamp, textOverflow)
-      }),
+    () => {
+      const unsubscribe = text.node.addLayoutChangeListener(updateLayout)
+      // Call immediately in case layout was already calculated before listener registration
+      updateLayout()
+      return unsubscribe
+    },
     text.abortSignal,
   )
   abortableEffect(() => {
