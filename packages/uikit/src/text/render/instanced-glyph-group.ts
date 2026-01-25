@@ -108,12 +108,14 @@ export class InstancedGlyphGroup {
     }
 
     if (this.mesh == null) {
-      // Initialize mesh immediately for first glyph to ensure visibility on first render
+      // Initialize mesh immediately for first glyph to prevent timing issues where
+      // renders occur before onFrame() is called, which would leave text invisible
       this.resize(1)
+      // resize(1) creates the mesh, so it's now safe to use
       this.glyphs[0] = glyph
       glyph.activate(0)
-      this.mesh!.count = 1
-      this.mesh!.visible = true
+      this.mesh.count = 1
+      this.mesh.visible = true
       this.root.requestRender?.()
       return
     }
