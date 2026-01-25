@@ -43,6 +43,8 @@ export function createInstancedText(
 
   const layoutSignal = signal<GlyphLayout | undefined>(undefined)
   abortableEffect(() => {
+    // Read customLayouting to ensure we react to font and text property changes
+    customLayouting.value
     const layoutProperties = layoutPropertiesRef.current
     const size = text.size.value
     const paddingInset = text.paddingInset.value
