@@ -107,8 +107,19 @@ export class InstancedGlyphGroup {
       return
     }
 
-    if (this.mesh == null || this.mesh.count >= this.instanceMatrix.count) {
-      //requesting insert because no space available
+    if (this.mesh == null) {
+      // Initialize mesh immediately for first glyph to ensure visibility on first render
+      this.resize(1)
+      this.glyphs[0] = glyph
+      glyph.activate(0)
+      this.mesh!.count = 1
+      this.mesh!.visible = true
+      this.root.requestRender?.()
+      return
+    }
+
+    if (this.mesh.count >= this.instanceMatrix.count) {
+      //requesting insert because buffer is full
       this.requestedGlyphs.push(glyph)
       this.root.requestFrame?.()
       return
