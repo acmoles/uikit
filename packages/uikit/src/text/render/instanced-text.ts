@@ -42,28 +42,26 @@ export function createInstancedText(
   const customLayouting = computedCustomLayouting(text.properties, text.fontSignal, layoutPropertiesRef)
 
   const layoutSignal = signal<GlyphLayout | undefined>(undefined)
-  abortableEffect(
-    () =>
-      text.node.addLayoutChangeListener(() => {
-        const layoutProperties = layoutPropertiesRef.current
-        const {
-          size: { value: size },
-          paddingInset: { value: paddingInset },
-          borderInset: { value: borderInset },
-          properties: { value: { lineClamp, textOverflow } },
-        } = text
-        if (layoutProperties == null || size == null || paddingInset == null || borderInset == null) {
-          return
-        }
-        const [width, height] = size
-        const [pTop, pRight, pBottom, pLeft] = paddingInset
-        const [bTop, bRight, bBottom, bLeft] = borderInset
-        const actualWidth = width - pRight - pLeft - bRight - bLeft
-        const actualheight = height - pTop - pBottom - bTop - bBottom
-        layoutSignal.value = buildGlyphLayout(layoutProperties, actualWidth, actualheight, lineClamp, textOverflow)
-      }),
-    text.abortSignal,
-  )
+  abortableEffect(() => {
+    // Read customLayouting to create reactive dependency on font and text property changes
+    // (This updates layoutPropertiesRef.current as a side effect)
+    customLayouting.value
+    const layoutProperties = layoutPropertiesRef.current
+    const size = text.size.value
+    const paddingInset = text.paddingInset.value
+    const borderInset = text.borderInset.value
+    const { lineClamp, textOverflow } = text.properties.value
+    
+    if (layoutProperties == null || size == null || paddingInset == null || borderInset == null) {
+      return
+    }
+    const [width, height] = size
+    const [pTop, pRight, pBottom, pLeft] = paddingInset
+    const [bTop, bRight, bBottom, bLeft] = borderInset
+    const actualWidth = width - pRight - pLeft - bRight - bLeft
+    const actualheight = height - pTop - pBottom - bTop - bBottom
+    layoutSignal.value = buildGlyphLayout(layoutProperties, actualWidth, actualheight, lineClamp, textOverflow)
+  }, text.abortSignal)
   abortableEffect(() => {
     const font = text.fontSignal.value
     if (font == null || text.orderInfo.value == null) {
